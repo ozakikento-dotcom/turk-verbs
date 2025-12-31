@@ -92,6 +92,29 @@ select, button, input {
     color: #ffffff;
   }
 }
+
+button, .choiceBtn {
+  -webkit-appearance: none;
+  appearance: none;
+  color: #000;
+}
+
+@media (prefers-color-scheme: dark) {
+  button, .choiceBtn {
+    color: #ffffff;
+  }
+}
+
+.choiceBtn.correct {
+  background: #2e7d32;
+  color: #ffffff;
+}
+
+.choiceBtn.wrong {
+  background: #c62828;
+  color: #ffffff;
+}
+
 </style>
 </head>
 
@@ -797,4 +820,5 @@ newQuestion();
 </script>
 </body>
 </html>
+
 
