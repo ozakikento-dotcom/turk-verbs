@@ -138,35 +138,169 @@ const verbs = [
   {verb:"unutmak",jp:"忘れる"}
 ];
 
-/* ===== 文法形（例：進行・未来） ===== */
+/* ========= 文法形（全文法形・全人称） ========= */
 const grammarForms = [
+
+/* --- 進行形 --- */
 {
- id:"prog_pos", jp:"進行形",
- persons,
+ id:"prog_pos", jp:"進行形肯定",
+ persons:["ben","sen","o","biz","siz"],
  make:(v,p)=>{
-  const s = soften(stem(v,"prog"),true,v.verb);
-  const i = harmonyI(s);
+  const s=soften(stem(v,"prog"),true,v.verb);
+  const i=harmonyI(s);
   return {ben:`${s}${i}yorum`,sen:`${s}${i}yorsun`,o:`${s}${i}yor`,
           biz:`${s}${i}yoruz`,siz:`${s}${i}yorsunuz`}[p];
  }
 },
 {
- id:"fut_pos", jp:"未来形",
- persons,
+ id:"prog_neg", jp:"進行形否定",
+ persons:["ben","sen","o","biz","siz"],
  make:(v,p)=>{
-  const s = soften(stem(v,"fut"),true,v.verb);
-  const a = harmonyAE(s);
+  const s=soften(stem(v,"prog"),true,v.verb);
+  const i=harmonyI(s);
+  return {ben:`${s}m${i}yorum`,sen:`${s}m${i}yorsun`,o:`${s}m${i}yor`,
+          biz:`${s}m${i}yoruz`,siz:`${s}m${i}yorsunuz`}[p];
+ }
+},
+
+/* --- 未来 --- */
+{
+ id:"fut_pos", jp:"未来形肯定",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s=soften(stem(v,"fut"),true,v.verb);
+  const a=harmonyAE(s);
   return {ben:`${s}${a}ceğim`,sen:`${s}${a}ceksin`,o:`${s}${a}cek`,
           biz:`${s}${a}ceğiz`,siz:`${s}${a}ceksiniz`}[p];
  }
-}
+},
+{
+ id:"fut_neg", jp:"未来形否定",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s=soften(stem(v,"fut"),true,v.verb);
+  return {ben:`${s}mayacağım`,sen:`${s}mayacaksın`,o:`${s}mayacak`,
+          biz:`${s}mayacağız`,siz:`${s}mayacaksınız`}[p];
+ }
+},
+
+/* --- 完了 --- */
+{
+ id:"past_pos", jp:"完了形肯定",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s=soften(stem(v,"past"),false,v.verb);
+  const i=harmonyI(s);
+  return {ben:`${s}d${i}m`,sen:`${s}d${i}n`,o:`${s}d${i}`,
+          biz:`${s}d${i}k`,siz:`${s}d${i}nız`}[p];
+ }
+},
+{
+ id:"past_neg", jp:"完了形否定",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s=stem(v,"past");
+  const i=harmonyI(s);
+  return {ben:`${s}mad${i}m`,sen:`${s}mad${i}n`,o:`${s}mad${i}`,
+          biz:`${s}mad${i}k`,siz:`${s}mad${i}nız`}[p];
+ }
+},
+
+/* --- 伝聞 --- */
+{
+ id:"rep_pos", jp:"伝聞完了肯定",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s=stem(v,"past");
+  const i=harmonyI(s);
+  return {ben:`${s}m${i}şım`,sen:`${s}m${i}şsın`,o:`${s}m${i}ş`,
+          biz:`${s}m${i}şız`,siz:`${s}m${i}şsınız`}[p];
+ }
+},
+{
+ id:"rep_neg", jp:"伝聞完了否定",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s=stem(v,"past");
+  const i=harmonyI(s);
+  return {ben:`${s}mam${i}şım`,sen:`${s}mam${i}şsın`,o:`${s}mam${i}ş`,
+          biz:`${s}mam${i}şız`,siz:`${s}mam${i}şsınız`}[p];
+ }
+},
+
+/* --- 中立形 --- */
+{
+ id:"aor_pos", jp:"中立形肯定",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s=stem(v,"aor");
+  const a=harmonyAE(s);
+  return {ben:`${s}${a}rım`,sen:`${s}${a}rsın`,o:`${s}${a}r`,
+          biz:`${s}${a}rız`,siz:`${s}${a}rsınız`}[p];
+ }
+},
+{
+ id:"aor_neg", jp:"中立形否定",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s=stem(v,"aor");
+  return {ben:`${s}mam`,sen:`${s}mazsın`,o:`${s}maz`,
+          biz:`${s}mayız`,siz:`${s}mazsınız`}[p];
+ }
+},
+
+/* --- 可能 --- */
+{
+ id:"abil_pos", jp:"可能肯定",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s=stem(v,"fut");
+  const a=harmonyAE(s);
+  return {ben:`${s}${a}bilirim`,sen:`${s}${a}bilirsin`,o:`${s}${a}bilir`,
+          biz:`${s}${a}biliriz`,siz:`${s}${a}bilirsiniz`}[p];
+ }
+},
+{
+ id:"abil_neg", jp:"可能否定",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s=stem(v,"fut");
+  return {ben:`${s}amam`,sen:`${s}amazsın`,o:`${s}amaz`,
+          biz:`${s}amayız`,siz:`${s}amazsınız`}[p];
+ }
+},
+
+/* --- 意向 --- */
+{
+ id:"opt_pos", jp:"意向形肯定",
+ persons:["ben","biz"],
+ make:(v,p)=>p==="ben"?`${stem(v,"fut")}ayım`:`${stem(v,"fut")}alım`
+},
+{
+ id:"opt_neg", jp:"意向形否定",
+ persons:["ben","biz"],
+ make:(v,p)=>p==="ben"?`${stem(v,"fut")}mayayım`:`${stem(v,"fut")}mayalım`
+},
+
+/* --- 命令 --- */
+{ id:"imp_dir_pos", jp:"直接命令", persons:["sen","siz"],
+  make:(v,p)=>p==="sen"?`${stem(v,"aor")}!`:`${stem(v,"aor")}ın!` },
+{ id:"imp_dir_neg", jp:"直接命令否定", persons:["sen","siz"],
+  make:(v,p)=>p==="sen"?`${stem(v,"aor")}ma!`:`${stem(v,"aor")}mayın!` },
+{ id:"imp_ind_pos", jp:"間接命令", persons:["o"], make:v=>`${stem(v,"aor")}sın` },
+{ id:"imp_ind_neg", jp:"間接命令否定", persons:["o"], make:v=>`${stem(v,"aor")}masın` }
+
 ];
 
-/* ===== 課 ===== */
-const lessons = [
- {lesson:1,title:"現在",verbs:["olmak","gitmek","gelmek","yapmak"],forms:["prog_pos"]},
- {lesson:2,title:"未来",verbs:["gitmek","gelmek"],forms:["fut_pos"]}
-];
+/* ========= 課データ（第1〜20課） ========= */
+const lessons = Array.from({length:20},(_,i)=>({
+  lesson:i+1,
+  title:`第${i+1}課`,
+  verbs: verbs.map(v=>v.verb),
+  forms: grammarForms.map(f=>f.id),
+  examples:{}
+}));
+
 
 /* ===== UI ===== */
 const lessonSelect = document.getElementById("lessonSelect");
