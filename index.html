@@ -2,40 +2,53 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<!-- スマホ最適化（必須） -->
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <title>ニューエクスプレストルコ語｜動詞活用 完全版</title>
 
 <style>
+/* ===== 基本 ===== */
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont;
   margin: 0;
   background: #f9f9f9;
   line-height: 1.6;
 }
-.header {
-  position: sticky;
-  top: 0;
-  background: #fff;
-  border-bottom: 1px solid #ddd;
-  padding: 8px;
-  z-index: 10;
+h1, h2 {
+  text-align: center;
+  margin: 8px 0;
 }
 .container {
   max-width: 640px;
   margin: auto;
   padding: 12px;
+  box-sizing: border-box;
 }
-h1 { text-align: center; font-size: 1.2em; }
 
-select, button {
+/* ===== ヘッダー ===== */
+.header {
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  border-bottom: 1px solid #ddd;
+  padding: 8px;
+  z-index: 100;
+}
+
+/* ===== フォーム ===== */
+select, button, input {
   width: 100%;
   padding: 14px;
   margin: 6px 0;
   font-size: 1em;
   border-radius: 10px;
+  box-sizing: border-box;
 }
 
+/* ===== 問題表示 ===== */
 .question {
   font-size: 1.3em;
   font-weight: bold;
@@ -43,22 +56,41 @@ select, button {
   margin: 16px 0;
 }
 
-.choiceBtn { background:#eee; border:none; }
-.choiceBtn.correct { background:#c8f7c5; }
-.choiceBtn.wrong { background:#f7c5c5; }
+/* ===== 選択肢 ===== */
+.choiceBtn {
+  background: #eeeeee;
+  border: none;
+}
+.choiceBtn.correct {
+  background: #c8f7c5;
+}
+.choiceBtn.wrong {
+  background: #f7c5c5;
+}
 
+/* ===== 例文 ===== */
 #exampleBox {
   margin-top: 12px;
   padding: 10px;
-  background: #fff;
+  background: #ffffff;
   border-radius: 8px;
   display: none;
 }
 
+/* ===== ダークモード ===== */
 @media (prefers-color-scheme: dark) {
-  body { background:#121212; color:#f0f0f0; }
-  .header, #exampleBox { background:#1e1e1e; }
-  button { background:#333; color:#fff; }
+  body {
+    background: #121212;
+    color: #f0f0f0;
+  }
+  .header,
+  #exampleBox {
+    background: #1e1e1e;
+  }
+  button {
+    background: #333333;
+    color: #ffffff;
+  }
 }
 </style>
 </head>
@@ -72,38 +104,31 @@ select, button {
 <div class="container">
   <div class="question" id="question"></div>
   <div id="choices"></div>
-  <button id="nextBtn">次へ</button>
+
+  <button id="nextBtn">次の問題</button>
+
   <button id="toggleExample">例文を見る</button>
   <div id="exampleBox"></div>
 </div>
 
 <script>
-/* ===== 共通 ===== */
-const rand = a => a[Math.floor(Math.random()*a.length)];
-const persons = ["ben","sen","o","biz","siz"];
 
-/* ===== 母音調和 ===== */
+/* ========= 母音調和 ========= */
 const vowels = ["a","e","ı","i","o","ö","u","ü"];
 const lastVowel = w => [...w].reverse().find(c=>vowels.includes(c));
-const harmonyAE = w => ["e","i","ö","ü"].includes(lastVowel(w)) ? "e" : "a";
-const harmonyI = w => {
+
+function harmonyAE(w){
+  return ["e","i","ö","ü"].includes(lastVowel(w)) ? "e" : "a";
+}
+function harmonyI(w){
   const v = lastVowel(w);
   if(["a","ı"].includes(v)) return "ı";
   if(["e","i"].includes(v)) return "i";
   if(["o","u"].includes(v)) return "u";
   return "ü";
-};
-
-/* ===== 子音変化 ===== */
-const noSoftening = ["bakmak","çıkmak","akmak","korkmak"];
-function soften(stem, vowel, verb){
-  if(!vowel || noSoftening.includes(verb)) return stem;
-  if(stem.endsWith("t")) return stem.slice(0,-1)+"d";
-  if(stem.endsWith("k")) return stem.slice(0,-1)+"ğ";
-  return stem;
 }
 
-/* ===== 不規則 ===== */
+/* ========= 語幹・不規則 ========= */
 const irregulars = {
   gitmek:{prog:"gid",fut:"gid",aor:"gid",past:"git"},
   yemek:{prog:"yiy",fut:"yiye",aor:"ye",past:"ye"},
@@ -117,234 +142,659 @@ function stem(v, form){
   return irregulars[v.verb]?.[form] || base;
 }
 
-/* ===== 動詞 ===== */
+/* ========= 子音変化 ========= */
+const noSoftening = ["bakmak","çıkmak","akmak","korkmak"];
+function soften(stem, vowel, verb){
+  if(!vowel || noSoftening.includes(verb)) return stem;
+  if(stem.endsWith("t")) return stem.slice(0,-1)+"d";
+  if(stem.endsWith("k")) return stem.slice(0,-1)+"ğ";
+  return stem;
+}
+
+/* ========= 動詞（第1〜20課・最終確定） ========= */
 const verbs = [
-  {verb:"olmak",jp:"〜である"},
-  {verb:"yapmak",jp:"する"},
-  {verb:"gitmek",jp:"行く"},
-  {verb:"gelmek",jp:"来る"},
-  {verb:"okumak",jp:"読む"},
-  {verb:"çalışmak",jp:"働く"},
-  {verb:"yemek",jp:"食べる"},
-  {verb:"içmek",jp:"飲む"},
-  {verb:"almak",jp:"買う"},
-  {verb:"vermek",jp:"与える"},
-  {verb:"sevmek",jp:"好きだ"},
-  {verb:"istemek",jp:"欲しい"},
-  {verb:"görmek",jp:"見る"},
-  {verb:"bilmek",jp:"知っている"},
-  {verb:"korkmak",jp:"怖がる"},
-  {verb:"hatırlamak",jp:"思い出す"},
-  {verb:"unutmak",jp:"忘れる"}
+
+  // --- 基本・存在・移動 ---
+  { verb:"olmak", jp:"〜である／なる" },
+  { verb:"yapmak", jp:"する" },
+  { verb:"gitmek", jp:"行く" },
+  { verb:"gelmek", jp:"来る" },
+
+  // --- 日常動作 ---
+  { verb:"okumak", jp:"読む／勉強する" },
+  { verb:"çalışmak", jp:"働く／勉強する" },
+  { verb:"yemek", jp:"食べる" },
+  { verb:"içmek", jp:"飲む" },
+
+  // --- 所有・授受 ---
+  { verb:"almak", jp:"買う／取る" },
+  { verb:"vermek", jp:"与える" },
+  { verb:"taşımak", jp:"運ぶ" },
+
+  // --- 好み・希望・会話 ---
+  { verb:"sevmek", jp:"好きだ／愛する" },
+  { verb:"istemek", jp:"欲しい／〜したい" },
+  { verb:"konuşmak", jp:"話す" },
+  { verb:"sormak", jp:"尋ねる" },
+
+  // --- 認知・知覚 ---
+  { verb:"görmek", jp:"見る" },
+  { verb:"bulmak", jp:"見つける" },
+  { verb:"bilmek", jp:"知っている" },
+  { verb:"tanımak", jp:"知り合いだ" },
+  { verb:"duymak", jp:"聞く" },
+  { verb:"hissetmek", jp:"感じる" },
+
+  // --- 能力・操作 ---
+  { verb:"anlamak", jp:"理解する" },
+  { verb:"kullanmak", jp:"使う" },
+  { verb:"açmak", jp:"開ける" },
+  { verb:"kapatmak", jp:"閉める" },
+
+  // --- 開始・終了・移動 ---
+  { verb:"başlamak", jp:"始める" },
+  { verb:"bitirmek", jp:"終える（他動）" },
+  { verb:"bitmek", jp:"終わる（自動）" },
+  { verb:"çıkmak", jp:"出る" },
+  { verb:"girmek", jp:"入る" },
+  { verb:"dönmek", jp:"戻る" },
+
+  // --- 待機・姿勢 ---
+  { verb:"bakmak", jp:"見る／眺める" },
+  { verb:"beklemek", jp:"待つ" },
+  { verb:"oturmak", jp:"座る" },
+
+  // --- 移動・行為 ---
+  { verb:"getirmek", jp:"持って来る" },
+  { verb:"gezmek", jp:"観光する" },
+
+  // --- 思考・判断 ---
+  { verb:"düşünmek", jp:"考える" },
+  { verb:"inanmak", jp:"信じる" },
+  { verb:"sanmak", jp:"思う" },
+
+  // --- 必要・変化 ---
+  { verb:"gerekmek", jp:"必要である" },
+  { verb:"değişmek", jp:"変わる" },
+  { verb:"artmak", jp:"増える" },
+  { verb:"azalmak", jp:"減る" },
+
+  // --- 状態 ---
+  { verb:"kalmak", jp:"残る／留まる" },
+  { verb:"bulunmak", jp:"存在する" },
+
+  // --- 計画 ---
+  { verb:"planlamak", jp:"計画する" },
+
+  // --- 感情 ---
+  { verb:"korkmak", jp:"怖がる" },
+  { verb:"sevinmek", jp:"喜ぶ" },
+
+  // --- 記憶 ---
+  { verb:"hatırlamak", jp:"思い出す" },
+  { verb:"unutmak", jp:"忘れる" },
+
 ];
 
 /* ========= 文法形（全文法形・全人称） ========= */
 const grammarForms = [
 
-/* --- 進行形 --- */
+/* ===== 進行形 ===== */
 {
- id:"prog_pos", jp:"進行形肯定",
+ id:"prog_pos", jp:"進行形肯定（〜している）",
  persons:["ben","sen","o","biz","siz"],
  make:(v,p)=>{
-  const s=soften(stem(v,"prog"),true,v.verb);
-  const i=harmonyI(s);
-  return {ben:`${s}${i}yorum`,sen:`${s}${i}yorsun`,o:`${s}${i}yor`,
-          biz:`${s}${i}yoruz`,siz:`${s}${i}yorsunuz`}[p];
+  const s = soften(stem(v,"prog"), true, v.verb);
+  const i = harmonyI(s);
+  return {
+    ben:`${s}${i}yorum`, sen:`${s}${i}yorsun`, o:`${s}${i}yor`,
+    biz:`${s}${i}yoruz`, siz:`${s}${i}yorsunuz`
+  }[p];
  }
 },
 {
- id:"prog_neg", jp:"進行形否定",
+ id:"prog_neg", jp:"進行形否定（〜していない）",
  persons:["ben","sen","o","biz","siz"],
  make:(v,p)=>{
-  const s=soften(stem(v,"prog"),true,v.verb);
-  const i=harmonyI(s);
-  return {ben:`${s}m${i}yorum`,sen:`${s}m${i}yorsun`,o:`${s}m${i}yor`,
-          biz:`${s}m${i}yoruz`,siz:`${s}m${i}yorsunuz`}[p];
- }
-},
-
-/* --- 未来 --- */
-{
- id:"fut_pos", jp:"未来形肯定",
- persons:["ben","sen","o","biz","siz"],
- make:(v,p)=>{
-  const s=soften(stem(v,"fut"),true,v.verb);
-  const a=harmonyAE(s);
-  return {ben:`${s}${a}ceğim`,sen:`${s}${a}ceksin`,o:`${s}${a}cek`,
-          biz:`${s}${a}ceğiz`,siz:`${s}${a}ceksiniz`}[p];
- }
-},
-{
- id:"fut_neg", jp:"未来形否定",
- persons:["ben","sen","o","biz","siz"],
- make:(v,p)=>{
-  const s=soften(stem(v,"fut"),true,v.verb);
-  return {ben:`${s}mayacağım`,sen:`${s}mayacaksın`,o:`${s}mayacak`,
-          biz:`${s}mayacağız`,siz:`${s}mayacaksınız`}[p];
+  const s = soften(stem(v,"prog"), true, v.verb);
+  const i = harmonyI(s);
+  return {
+    ben:`${s}m${i}yorum`, sen:`${s}m${i}yorsun`, o:`${s}m${i}yor`,
+    biz:`${s}m${i}yoruz`, siz:`${s}m${i}yorsunuz`
+  }[p];
  }
 },
 
-/* --- 完了 --- */
+/* ===== 未来形 ===== */
 {
- id:"past_pos", jp:"完了形肯定",
+ id:"fut_pos", jp:"未来形肯定（〜するつもりだ）",
  persons:["ben","sen","o","biz","siz"],
  make:(v,p)=>{
-  const s=soften(stem(v,"past"),false,v.verb);
-  const i=harmonyI(s);
-  return {ben:`${s}d${i}m`,sen:`${s}d${i}n`,o:`${s}d${i}`,
-          biz:`${s}d${i}k`,siz:`${s}d${i}nız`}[p];
+  const s = soften(stem(v,"fut"), true, v.verb);
+  const a = harmonyAE(s);
+  return {
+    ben:`${s}${a}ceğim`, sen:`${s}${a}ceksin`, o:`${s}${a}cek`,
+    biz:`${s}${a}ceğiz`, siz:`${s}${a}ceksiniz`
+  }[p];
  }
 },
 {
- id:"past_neg", jp:"完了形否定",
+ id:"fut_neg", jp:"未来形否定（〜しないつもりだ）",
  persons:["ben","sen","o","biz","siz"],
  make:(v,p)=>{
-  const s=stem(v,"past");
-  const i=harmonyI(s);
-  return {ben:`${s}mad${i}m`,sen:`${s}mad${i}n`,o:`${s}mad${i}`,
-          biz:`${s}mad${i}k`,siz:`${s}mad${i}nız`}[p];
- }
-},
-
-/* --- 伝聞 --- */
-{
- id:"rep_pos", jp:"伝聞完了肯定",
- persons:["ben","sen","o","biz","siz"],
- make:(v,p)=>{
-  const s=stem(v,"past");
-  const i=harmonyI(s);
-  return {ben:`${s}m${i}şım`,sen:`${s}m${i}şsın`,o:`${s}m${i}ş`,
-          biz:`${s}m${i}şız`,siz:`${s}m${i}şsınız`}[p];
- }
-},
-{
- id:"rep_neg", jp:"伝聞完了否定",
- persons:["ben","sen","o","biz","siz"],
- make:(v,p)=>{
-  const s=stem(v,"past");
-  const i=harmonyI(s);
-  return {ben:`${s}mam${i}şım`,sen:`${s}mam${i}şsın`,o:`${s}mam${i}ş`,
-          biz:`${s}mam${i}şız`,siz:`${s}mam${i}şsınız`}[p];
+  const s = soften(stem(v,"fut"), true, v.verb);
+  return {
+    ben:`${s}mayacağım`, sen:`${s}mayacaksın`, o:`${s}mayacak`,
+    biz:`${s}mayacağız`, siz:`${s}mayacaksınız`
+  }[p];
  }
 },
 
-/* --- 中立形 --- */
+/* ===== 完了形 ===== */
 {
- id:"aor_pos", jp:"中立形肯定",
+ id:"past_pos", jp:"完了形肯定（〜した）",
  persons:["ben","sen","o","biz","siz"],
  make:(v,p)=>{
-  const s=stem(v,"aor");
-  const a=harmonyAE(s);
-  return {ben:`${s}${a}rım`,sen:`${s}${a}rsın`,o:`${s}${a}r`,
-          biz:`${s}${a}rız`,siz:`${s}${a}rsınız`}[p];
+  const s = soften(stem(v,"past"), false, v.verb);
+  const i = harmonyI(s);
+  return {
+    ben:`${s}d${i}m`, sen:`${s}d${i}n`, o:`${s}d${i}`,
+    biz:`${s}d${i}k`, siz:`${s}d${i}nız`
+  }[p];
  }
 },
 {
- id:"aor_neg", jp:"中立形否定",
+ id:"past_neg", jp:"完了形否定（〜しなかった）",
  persons:["ben","sen","o","biz","siz"],
  make:(v,p)=>{
-  const s=stem(v,"aor");
-  return {ben:`${s}mam`,sen:`${s}mazsın`,o:`${s}maz`,
-          biz:`${s}mayız`,siz:`${s}mazsınız`}[p];
- }
-},
-
-/* --- 可能 --- */
-{
- id:"abil_pos", jp:"可能肯定",
- persons:["ben","sen","o","biz","siz"],
- make:(v,p)=>{
-  const s=stem(v,"fut");
-  const a=harmonyAE(s);
-  return {ben:`${s}${a}bilirim`,sen:`${s}${a}bilirsin`,o:`${s}${a}bilir`,
-          biz:`${s}${a}biliriz`,siz:`${s}${a}bilirsiniz`}[p];
- }
-},
-{
- id:"abil_neg", jp:"可能否定",
- persons:["ben","sen","o","biz","siz"],
- make:(v,p)=>{
-  const s=stem(v,"fut");
-  return {ben:`${s}amam`,sen:`${s}amazsın`,o:`${s}amaz`,
-          biz:`${s}amayız`,siz:`${s}amazsınız`}[p];
+  const s = stem(v,"past");
+  const i = harmonyI(s);
+  return {
+    ben:`${s}mad${i}m`, sen:`${s}mad${i}n`, o:`${s}mad${i}`,
+    biz:`${s}mad${i}k`, siz:`${s}mad${i}nız`
+  }[p];
  }
 },
 
-/* --- 意向 --- */
+/* ===== 伝聞完了形 ===== */
 {
- id:"opt_pos", jp:"意向形肯定",
+ id:"rep_pos", jp:"伝聞完了形肯定（〜したそうだ）",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s = stem(v,"past");
+  const i = harmonyI(s);
+  return {
+    ben:`${s}m${i}şım`, sen:`${s}m${i}şsın`, o:`${s}m${i}ş`,
+    biz:`${s}m${i}şız`, siz:`${s}m${i}şsınız`
+  }[p];
+ }
+},
+{
+ id:"rep_neg", jp:"伝聞完了形否定（〜しなかったそうだ）",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s = stem(v,"past");
+  const i = harmonyI(s);
+  return {
+    ben:`${s}mam${i}şım`, sen:`${s}mam${i}şsın`, o:`${s}mam${i}ş`,
+    biz:`${s}mam${i}şız`, siz:`${s}mam${i}şsınız`
+  }[p];
+ }
+},
+
+/* ===== 中立形（アオリスト） ===== */
+{
+ id:"aor_pos", jp:"中立形肯定（〜する）",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s = stem(v,"aor");
+  const a = harmonyAE(s);
+  return {
+    ben:`${s}${a}rım`, sen:`${s}${a}rsın`, o:`${s}${a}r`,
+    biz:`${s}${a}rız`, siz:`${s}${a}rsınız`
+  }[p];
+ }
+},
+{
+ id:"aor_neg", jp:"中立形否定（〜しない）",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s = stem(v,"aor");
+  return {
+    ben:`${s}mam`, sen:`${s}mazsın`, o:`${s}maz`,
+    biz:`${s}mayız`, siz:`${s}mazsınız`
+  }[p];
+ }
+},
+
+/* ===== 可能形 ===== */
+{
+ id:"abil_pos", jp:"可能形肯定（〜できる）",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s = stem(v,"fut");
+  const a = harmonyAE(s);
+  return {
+    ben:`${s}${a}bilirim`, sen:`${s}${a}bilirsin`, o:`${s}${a}bilir`,
+    biz:`${s}${a}biliriz`, siz:`${s}${a}bilirsiniz`
+  }[p];
+ }
+},
+{
+ id:"abil_neg", jp:"可能形否定（〜できない）",
+ persons:["ben","sen","o","biz","siz"],
+ make:(v,p)=>{
+  const s = stem(v,"fut");
+  return {
+    ben:`${s}amam`, sen:`${s}amazsın`, o:`${s}amaz`,
+    biz:`${s}amayız`, siz:`${s}amazsınız`
+  }[p];
+ }
+},
+
+/* ===== 動名詞 ===== */
+{ id:"vn_mak", jp:"動名詞（-mak/-mek）", persons:["—"], make:v=>v.verb },
+{ id:"vn_ma", jp:"動名詞（-ma/-me）", persons:["—"], make:v=>stem(v,"aor")+"ma" },
+
+/* ===== 意向形 ===== */
+{
+ id:"opt_pos", jp:"意向形肯定（〜しよう）",
  persons:["ben","biz"],
  make:(v,p)=>p==="ben"?`${stem(v,"fut")}ayım`:`${stem(v,"fut")}alım`
 },
 {
- id:"opt_neg", jp:"意向形否定",
+ id:"opt_neg", jp:"意向形否定（〜しないでおこう）",
  persons:["ben","biz"],
  make:(v,p)=>p==="ben"?`${stem(v,"fut")}mayayım`:`${stem(v,"fut")}mayalım`
 },
 
-/* --- 命令 --- */
-{ id:"imp_dir_pos", jp:"直接命令", persons:["sen","siz"],
-  make:(v,p)=>p==="sen"?`${stem(v,"aor")}!`:`${stem(v,"aor")}ın!` },
-{ id:"imp_dir_neg", jp:"直接命令否定", persons:["sen","siz"],
-  make:(v,p)=>p==="sen"?`${stem(v,"aor")}ma!`:`${stem(v,"aor")}mayın!` },
-{ id:"imp_ind_pos", jp:"間接命令", persons:["o"], make:v=>`${stem(v,"aor")}sın` },
-{ id:"imp_ind_neg", jp:"間接命令否定", persons:["o"], make:v=>`${stem(v,"aor")}masın` }
+/* ===== 命令形 ===== */
+{ id:"imp_ind_pos", jp:"間接命令形肯定", persons:["o"], make:v=>`${stem(v,"aor")}sın` },
+{ id:"imp_ind_neg", jp:"間接命令形否定", persons:["o"], make:v=>`${stem(v,"aor")}masın` },
+
+{
+ id:"imp_dir_pos", jp:"直接命令形",
+ persons:["sen","siz"],
+ make:(v,p)=>p==="sen"?`${stem(v,"aor")}!`:`${stem(v,"aor")}ın!`
+},
+{
+ id:"imp_dir_neg", jp:"直接命令形否定",
+ persons:["sen","siz"],
+ make:(v,p)=>p==="sen"?`${stem(v,"aor")}ma!`:`${stem(v,"aor")}mayın!`
+},
+	
+{ id:"imp_pol", jp:"直接命令形（丁寧）", persons:["siz"], make:v=>`${stem(v,"aor")}ınız` },
 
 ];
 
 /* ========= 課データ（第1〜20課） ========= */
-const lessons = Array.from({length:20},(_,i)=>({
-  lesson:i+1,
-  title:`第${i+1}課`,
-  verbs: verbs.map(v=>v.verb),
-  forms: grammarForms.map(f=>f.id),
-  examples:{}
-}));
+const lessons = [
 
+/* --- 第1課 --- */
+{
+ lesson:1,
+ title:"自己紹介・現在",
+ verbs:["olmak","gelmek","gitmek","yapmak"],
+ forms:["prog_pos","aor_pos"],
+ examples:{
+  olmak:"Ben Japon'um.",
+  gelmek:"Japonya'dan geliyorum.",
+  gitmek:"Okula gidiyorum.",
+  yapmak:"Ne yapıyorsun?"
+ }
+},
 
-/* ===== UI ===== */
+/* --- 第2課 --- */
+{
+ lesson:2,
+ title:"日常行動",
+ verbs:["okumak","çalışmak","yemek","içmek"],
+ forms:["prog_pos","prog_neg","aor_pos"],
+ examples:{
+  okumak:"Şimdi Türkçe okuyorum.",
+  çalışmak:"Bugün çalışıyorum.",
+  yemek:"Evde yemek yiyorum.",
+  içmek:"Çay içiyorum."
+ }
+},
+
+/* --- 第3課 --- */
+{
+ lesson:3,
+ title:"未来",
+ verbs:["gitmek","gelmek","almak","vermek"],
+ forms:["fut_pos","fut_neg"],
+ examples:{
+  gitmek:"Yarın okula gideceğim.",
+  gelmek:"Akşam eve geleceğim.",
+  almak:"Yeni bir kitap alacağım.",
+  vermek:"Arkadaşıma hediye vereceğim."
+ }
+},
+
+/* --- 第4課 --- */
+{
+ lesson:4,
+ title:"好み・希望",
+ verbs:["sevmek","istemek","konuşmak","sormak"],
+ forms:["aor_pos","aor_neg","prog_pos"],
+ examples:{
+  sevmek:"Türkçeyi seviyorum.",
+  istemek:"Bir çay istiyorum.",
+  konuşmak:"Türkçe konuşuyorum.",
+  sormak:"Bir soru soruyorum."
+ }
+},
+
+/* --- 第5課 --- */
+{
+ lesson:5,
+ title:"過去",
+ verbs:["görmek","bulmak","bilmek","tanımak"],
+ forms:["past_pos","past_neg"],
+ examples:{
+  görmek:"Dün onu gördüm.",
+  bulmak:"Anahtarı buldum.",
+  bilmek:"Bu kelimeyi biliyorum.",
+  tanımak:"Onu tanıyorum."
+ }
+},
+
+/* --- 第6課 --- */
+{
+ lesson:6,
+ title:"伝聞・経験",
+ verbs:["gitmek","yapmak","duymak","tanımak"],
+ forms:["rep_pos","rep_neg"],
+ examples:{
+  gitmek:"O Japonya'ya gitmiş.",
+  yapmak:"Ödevini yapmamış.",
+  duymak:"Bu haberi duydum.",
+  tanımak:"Onu tanımış."
+ }
+},
+
+/* --- 第7課 --- */
+{
+ lesson:7,
+ title:"能力・可能",
+ verbs:["anlamak","kullanmak","açmak","kapatmak"],
+ forms:["abil_pos","abil_neg"],
+ examples:{
+  anlamak:"Bu konuyu anlayabiliyorum.",
+  kullanmak:"Bu telefonu kullanabilirim.",
+  açmak:"Kapıyı açabilir misin?",
+  kapatmak:"Pencereyi kapatamam."
+ }
+},
+
+/* --- 第8課 --- */
+{
+ lesson:8,
+ title:"習慣",
+ verbs:["başlamak","bitirmek","çıkmak","girmek"],
+ forms:["aor_pos","aor_neg"],
+ examples:{
+  başlamak:"Ders dokuzda başlar.",
+  bitirmek:"Saat beşte biter.",
+  çıkmak:"Evden sekizde çıkarım.",
+  girmek:"Ofise giriyorum."
+ }
+},
+
+/* --- 第9課 --- */
+{
+ lesson:9,
+ title:"命令・依頼",
+ verbs:["bakmak","beklemek","oturmak","getirmek"],
+ forms:["imp_dir_pos","imp_dir_neg","imp_pol"],
+ examples:{
+  bakmak:"Buraya bak!",
+  beklemek:"Bir dakika bekleyin.",
+  oturmak:"Lütfen oturun.",
+  getirmek:"Bunu getiriniz."
+ }
+},
+
+/* --- 第10課 --- */
+{
+ lesson:10,
+ title:"意向・提案",
+ verbs:["gitmek","yemek","içmek","gezmek"],
+ forms:["opt_pos","opt_neg"],
+ examples:{
+  gitmek:"Hadi gidelim.",
+  yemek:"Birlikte yemek yiyelim.",
+  içmek:"Çay içmeyelim.",
+  gezmek:"Biraz gezelim."
+ }
+},
+
+/* --- 第11課 --- */
+{
+ lesson:11,
+ title:"思考・判断",
+ verbs:["düşünmek","inanmak","sanmak"],
+ forms:["aor_pos","aor_neg"],
+ examples:{
+  düşünmek:"Böyle düşünüyorum.",
+  inanmak:"Buna inanıyorum.",
+  sanmak:"Öyle sanıyorum."
+ }
+},
+
+/* --- 第12課 --- */
+{
+ lesson:12,
+ title:"理由・継続",
+ verbs:["istemek","gerekmek","devam etmek"],
+ forms:["aor_pos","prog_pos"],
+ examples:{
+  istemek:"Gitmek istiyorum.",
+  gerekmek:"Gitmem gerekiyor.",
+  "devam etmek":"Ders devam ediyor."
+ }
+},
+
+/* --- 第13課 --- */
+{
+ lesson:13,
+ title:"変化",
+ verbs:["değişmek","artmak","azalmak"],
+ forms:["aor_pos","past_pos"],
+ examples:{
+  değişmek:"Hava değişti.",
+  artmak:"Fiyatlar arttı.",
+  azalmak:"Yağmur azaldı."
+ }
+},
+
+/* --- 第14課 --- */
+{
+ lesson:14,
+ title:"依頼・許可",
+ verbs:["rica etmek","izin vermek","sormak"],
+ forms:["imp_ind_pos","imp_ind_neg"],
+ examples:{
+  "rica etmek":"Bir şey rica ediyorum.",
+  "izin vermek":"Girmene izin veriyorum.",
+  sormak:"Bir şey sorabilir miyim?"
+ }
+},
+
+/* --- 第15課 --- */
+{
+ lesson:15,
+ title:"完了・結果",
+ verbs:["bitmek","kalmak"],
+ forms:["past_pos","rep_pos"],
+ examples:{
+  bitmek:"Toplantı bitti.",
+  kalmak:"Evde kalmış."
+ }
+},
+
+/* --- 第16課 --- */
+{
+ lesson:16,
+ title:"条件・存在",
+ verbs:["olmak","bulunmak"],
+ forms:["aor_pos","aor_neg"],
+ examples:{
+  olmak:"Zaman olursa giderim.",
+  bulunmak:"Burada market bulunur."
+ }
+},
+
+/* --- 第17課 --- */
+{
+ lesson:17,
+ title:"受動",
+ verbs:["yapılmak","söylenmek"],
+ forms:["aor_pos","past_pos"],
+ examples:{
+  yapılmak:"Bu iş burada yapılır.",
+  söylenmek:"Bu söz söylendi."
+ }
+},
+
+/* --- 第18課 --- */
+{
+ lesson:18,
+ title:"計画・決定",
+ verbs:["planlamak","karar vermek"],
+ forms:["fut_pos","fut_neg"],
+ examples:{
+  planlamak:"Seyahat planlıyorum.",
+  "karar vermek":"Gitmeye karar verdim."
+ }
+},
+
+/* --- 第19課 --- */
+{
+ lesson:19,
+ title:"感情",
+ verbs:["korkmak","sevinmek"],
+ forms:["aor_pos","past_pos"],
+ examples:{
+  korkmak:"Köpekten korkuyorum.",
+  sevinmek:"Çok sevindim."
+ }
+},
+
+/* --- 第20課 --- */
+{
+ lesson:20,
+ title:"総合",
+ verbs:["hatırlamak","unutmak"],
+ forms:["past_pos","past_neg"],
+ examples:{
+  hatırlamak:"Onu hatırlıyorum.",
+  unutmak:"Adını unuttum."
+ }
+}
+
+];
+
+/* ========= 共通 ========= */
+const rand = a => a[Math.floor(Math.random() * a.length)];
+
+/* ========= DOM ========= */
 const lessonSelect = document.getElementById("lessonSelect");
-const qEl = document.getElementById("question");
-const cEl = document.getElementById("choices");
-const exEl = document.getElementById("exampleBox");
+const questionEl   = document.getElementById("question");
+const choicesEl    = document.getElementById("choices");
+const exampleBox   = document.getElementById("exampleBox");
+const nextBtn      = document.getElementById("nextBtn");
+const toggleExample= document.getElementById("toggleExample");
 
+/* ========= 課セレクタ生成 ========= */
 lessons.forEach(l=>{
-  const o=document.createElement("option");
-  o.value=l.lesson;
-  o.textContent=`第${l.lesson}課：${l.title}`;
-  lessonSelect.appendChild(o);
+  const op = document.createElement("option");
+  op.value = l.lesson;
+  op.textContent = `第${l.lesson}課：${l.title}`;
+  lessonSelect.appendChild(op);
 });
 
-let current=null;
+/* ========= 現在の問題 ========= */
+let current = null;
 
-function newQ(){
-  const L=lessons.find(l=>l.lesson==lessonSelect.value);
-  const v=verbs.find(x=>x.verb===rand(L.verbs));
-  const g=grammarForms.find(x=>x.id===rand(L.forms));
-  const p=rand(g.persons);
-  const ans=g.make(v,p);
-  current={ans};
-  qEl.textContent=`${v.jp} / ${g.jp} / ${p}`;
-  cEl.innerHTML="";
-  const opts=[ans];
-  while(opts.length<4){
-    const o=g.make(v,rand(g.persons));
+/* ========= 問題生成 ========= */
+function newQuestion(){
+  const lesson = lessons.find(l => l.lesson == lessonSelect.value);
+
+  const verbName = rand(lesson.verbs);
+  const verb = verbs.find(v => v.verb === verbName);
+
+  const formId = rand(lesson.forms);
+  const form = grammarForms.find(f => f.id === formId);
+
+  const person = rand(form.persons);
+
+  const answer = form.make(verb, person);
+
+  current = {
+    verb,
+    form,
+    person,
+    answer,
+    example: lesson.examples[verb.verb] || ""
+  };
+
+  // 表示
+  questionEl.textContent =
+    `${verb.jp} ／ ${form.jp} ／ ${person}`;
+
+  renderChoices(answer, verb, form, person);
+  exampleBox.style.display = "none";
+}
+
+/* ========= 選択肢生成 ========= */
+function renderChoices(correct, verb, form, person){
+  choicesEl.innerHTML = "";
+
+  const opts = [correct];
+
+  while(opts.length < 4){
+    const p = rand(form.persons);
+    const o = form.make(verb, p);
     if(!opts.includes(o)) opts.push(o);
   }
+
   opts.sort(()=>Math.random()-0.5);
+
   opts.forEach(o=>{
-    const b=document.createElement("button");
-    b.className="choiceBtn";
-    b.textContent=o;
-    b.onclick=()=>b.classList.add(o===ans?"correct":"wrong");
-    cEl.appendChild(b);
+    const btn = document.createElement("button");
+    btn.className = "choiceBtn";
+    btn.textContent = o;
+    btn.onclick = ()=>{
+      if(o === correct){
+        btn.classList.add("correct");
+      } else {
+        btn.classList.add("wrong");
+      }
+    };
+    choicesEl.appendChild(btn);
   });
 }
 
-nextBtn.onclick=newQ;
-lessonSelect.onchange=newQ;
-lessonSelect.value=1;
-newQ();
+/* ========= 例文表示 ========= */
+toggleExample.onclick = ()=>{
+  if(!current) return;
+  exampleBox.style.display =
+    exampleBox.style.display === "none" ? "block" : "none";
+
+  exampleBox.textContent =
+    current.example || current.answer;
+};
+
+/* ========= イベント ========= */
+nextBtn.onclick = newQuestion;
+lessonSelect.onchange = newQuestion;
+
+/* ========= 初期化 ========= */
+lessonSelect.value = 1;
+newQuestion();
 </script>
 </body>
 </html>
+
